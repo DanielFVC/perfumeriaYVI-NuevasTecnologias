@@ -78,3 +78,4 @@ docker compose run --rm trafico run /scripts/ataque.js   # simula ataques (bloqu
 ```bash
 mvn verify                  # pruebas + reporte de cobertura en target/site/jacoco/index.html
 ```
+"# perfumeria-yvi" 
