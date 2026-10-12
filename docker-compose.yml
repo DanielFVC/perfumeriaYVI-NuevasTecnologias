@@ -1,0 +1,143 @@
+# =====================================================================
+# Perfumería YVI - Entorno completo con un solo comando (etapa DEPLOY):
+#     docker compose up -d --build
+# App:  http://localhost:8080     (usuario admin / Admin2026*)
+# BD:   MariaDB 10.4 (misma versión de XAMPP) con la base ficticia v2
+#
+# Etapas OPERAR y MONITOREAR (ver docs/MONITOREO.md):
+#     docker compose --profile monitoreo up -d --build
+# Grafana:      http://localhost:3000   (admin / clave GRAFANA_PASSWORD del .env)
+# Prometheus:   http://localhost:9090   · Alertmanager: http://localhost:9093
+# Simular un turno de trabajo:   docker compose run --rm trafico
+# Simular ataques:               docker compose run --rm trafico run /scripts/ataque.js
+# =====================================================================
+services:
+  db:
+    image: mariadb:10.4
+    container_name: perfumeria-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-CambieEstaClaveRoot2026*}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:-PerfumeriaApp2026*}
+      TZ: America/Bogota
+    volumes:
+      - ./database/perfumeriayvi_v2.sql:/docker-entrypoint-initdb.d/01-perfumeriayvi_v2.sql:ro
+      - ./docker/mysql/02-usuario-app.sh:/docker-entrypoint-initdb.d/02-usuario-app.sh:ro
+      - datos-mariadb:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD:-CambieEstaClaveRoot2026*}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: .
+    image: perfumeria-yvi:local
+    container_name: perfumeria-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://db:3306/perfumeriayvi_v2?useSSL=false&serverTimezone=America/Bogota&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      DB_USER: perfumeria_app
+      DB_PASSWORD: ${APP_DB_PASSWORD:-PerfumeriaApp2026*}
+      COOKIE_SECURE: "false"   # en local no hay HTTPS; en un servidor real debe ser true
+      MANAGEMENT_PORT: "8081"  # salud y métricas: solo dentro de la red de Docker
+    ports:
+      - "8080:8080"            # el 8081 NO se publica: las métricas no quedan expuestas
+    volumes:
+      - logs-app:/app/logs
+
+  # ===================== OPERAR / MONITOREAR =====================
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: perfumeria-prometheus
+    profiles: ["monitoreo"]
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=7d
+    volumes:
+      - ./monitoreo/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoreo/prometheus/alertas.yml:/etc/prometheus/alertas.yml:ro
+      - datos-prometheus:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      app:
+        condition: service_healthy   # evita la falsa alerta "AplicacionCaida" mientras arranca
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: perfumeria-alertmanager
+    profiles: ["monitoreo"]
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/alertmanager/alertmanager.yml
+    volumes:
+      - ./monitoreo/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"
+
+  loki:
+    image: grafana/loki:3.2.1
+    container_name: perfumeria-loki
+    profiles: ["monitoreo"]
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:3.2.1
+    container_name: perfumeria-promtail
+    profiles: ["monitoreo"]
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail.yml
+    volumes:
+      - ./monitoreo/promtail/promtail.yml:/etc/promtail/promtail.yml:ro
+      - logs-app:/logs:ro
+    depends_on:
+      - loki
+      - app        # la app crea primero la carpeta de logs con sus permisos
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: perfumeria-grafana
+    profiles: ["monitoreo"]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-Grafana2026*}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_USERS_DEFAULT_LANGUAGE: es-ES
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /var/lib/grafana/dashboards/perfumeria-yvi.json
+    volumes:
+      - ./monitoreo/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoreo/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - datos-grafana:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+      - loki
+
+  # Generador de tráfico para la demostración (k6). Solo corre cuando se pide:
+  #   docker compose run --rm trafico                         -> turno de trabajo
+  #   docker compose run --rm trafico run /scripts/ataque.js  -> ataques de prueba
+  trafico:
+    image: grafana/k6:0.54.0
+    profiles: ["trafico"]
+    command: run /scripts/trafico.js
+    environment:
+      BASE_URL: http://app:8080
+    volumes:
+      - ./monitoreo/k6:/scripts:ro
+    depends_on:
+      - app
+
+volumes:
+  datos-mariadb:
+  logs-app:
+  datos-prometheus:
+  datos-grafana:

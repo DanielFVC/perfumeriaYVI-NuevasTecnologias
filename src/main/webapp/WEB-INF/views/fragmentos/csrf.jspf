@@ -1,0 +1,3 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- RNF-S4: token anti-CSRF que todo formulario POST debe enviar --%>
+<input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}">

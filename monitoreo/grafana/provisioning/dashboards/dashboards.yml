@@ -1,0 +1,10 @@
+# Carga el tablero de la Perfumería YVI desde /var/lib/grafana/dashboards
+apiVersion: 1
+providers:
+  - name: perfumeria-yvi
+    folder: Perfumería YVI
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

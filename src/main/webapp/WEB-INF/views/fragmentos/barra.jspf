@@ -1,0 +1,15 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- Barra superior: usuario autenticado y cierre de sesión por POST (RF02, RNF-S4) --%>
+<nav class="barra-yvi d-flex align-items-center gap-3">
+  <a class="marca" href="${ctx}/index"><i class="fa-solid fa-spray-can-sparkles"></i>Perfumería YVI</a>
+  <div class="ms-auto d-flex align-items-center gap-2">
+    <span class="usuario d-none d-md-inline">
+      <c:out value="${sessionScope.usuarioSesion.nombre}"/><span class="rol"><c:out value="${sessionScope.usuarioSesion.rol}"/></span>
+    </span>
+    <a href="${ctx}/index" aria-label="Panel" class="btn-barra text-decoration-none"><i class="fa-solid fa-house"></i><span class="d-none d-sm-inline ms-1">Panel</span></a>
+    <form method="post" action="${ctx}/logout" class="d-inline m-0">
+      <%@ include file="/WEB-INF/views/fragmentos/csrf.jspf" %>
+      <button type="submit" class="btn-barra" aria-label="Cerrar sesión"><i class="fa-solid fa-arrow-right-from-bracket"></i><span class="d-none d-sm-inline ms-1">Cerrar sesión</span></button>
+    </form>
+  </div>
+</nav>

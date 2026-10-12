@@ -1,0 +1,85 @@
+# =====================================================================
+# Perfumería YVI - Reglas de alerta (etapa OPERAR: detectar incidentes)
+# Cada alerta indica el requisito no funcional que vigila.
+# Severidades: critica (atender ya) · advertencia (revisar en el turno) · info
+# =====================================================================
+groups:
+  - name: disponibilidad-y-rendimiento
+    rules:
+      - alert: AplicacionCaida
+        expr: up{job="perfumeria-app"} == 0
+        for: 15s
+        labels:
+          severidad: critica
+        annotations:
+          resumen: "La aplicación Perfumería YVI no responde"
+          descripcion: "Prometheus no puede leer las métricas de {{ $labels.instance }} desde hace más de 15 segundos."
+
+      - alert: RespuestaLenta
+        expr: >
+          histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job="perfumeria-app", uri!~"/actuator.*"}[1m]))) > 2
+        for: 1m
+        labels:
+          severidad: advertencia
+          requisito: RNF-R1
+        annotations:
+          resumen: "El 95 % de las peticiones tarda más de 2 segundos (RNF-R1)"
+          descripcion: "Percentil 95 actual: {{ $value | humanizeDuration }}."
+
+      - alert: PoolConexionesSaturado
+        expr: hikaricp_connections_pending{job="perfumeria-app"} > 0
+        for: 30s
+        labels:
+          severidad: advertencia
+          requisito: RNF-R3
+        annotations:
+          resumen: "Hay peticiones esperando una conexión a la base de datos (RNF-R3)"
+          descripcion: "Las 10 conexiones del pool están ocupadas; {{ $value }} petición(es) en espera."
+
+      - alert: ErroresDelServidor
+        expr: sum(increase(http_server_requests_seconds_count{job="perfumeria-app", status=~"5.."}[2m])) > 0
+        labels:
+          severidad: advertencia
+        annotations:
+          resumen: "La aplicación respondió con errores 5xx"
+          descripcion: "{{ $value | humanize }} error(es) del servidor en los últimos 2 minutos."
+
+  - name: seguridad
+    rules:
+      - alert: CuentaBloqueada
+        expr: sum(increase(perfumeria_cuentas_bloqueadas_total{job="perfumeria-app"}[5m])) > 0
+        labels:
+          severidad: advertencia
+          requisito: RNF-S2
+        annotations:
+          resumen: "Se bloqueó una cuenta por 5 intentos fallidos (RNF-S2)"
+          descripcion: "Cuentas bloqueadas en los últimos 5 minutos: {{ $value | humanize }}. Revise la bitácora SEGURIDAD en Grafana."
+
+      - alert: PosibleAtaqueDeFuerzaBruta
+        expr: sum(increase(perfumeria_login_total{job="perfumeria-app", resultado="fallido"}[5m])) >= 5
+        labels:
+          severidad: critica
+          requisito: RNF-S2
+        annotations:
+          resumen: "5 o más inicios de sesión fallidos en 5 minutos"
+          descripcion: "Intentos fallidos: {{ $value | humanize }}. Puede ser un intento de adivinar contraseñas."
+
+      - alert: PeticionesSinTokenCsrf
+        expr: sum(increase(perfumeria_csrf_rechazados_total{job="perfumeria-app"}[5m])) > 0
+        labels:
+          severidad: advertencia
+          requisito: RNF-S4
+        annotations:
+          resumen: "Se rechazaron formularios sin token CSRF válido (RNF-S4)"
+          descripcion: "Peticiones rechazadas en 5 minutos: {{ $value | humanize }}."
+
+  - name: negocio
+    rules:
+      - alert: StockBajoEnAumento
+        expr: perfumeria_productos_stock_bajo{job="perfumeria-app"} > 5
+        labels:
+          severidad: info
+          requisito: RF06
+        annotations:
+          resumen: "Hay más de 5 productos con stock bajo (RF06)"
+          descripcion: "{{ $value }} productos tienen stock menor o igual al mínimo. Conviene hacer pedido a proveedores."

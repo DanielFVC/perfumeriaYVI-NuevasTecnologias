@@ -1,0 +1,47 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- Campos de la venta enlazados a vm.venta (RF07 / RF08). Líneas dinámicas de productos. --%>
+<div class="col-md-4">
+  <label class="form-label" for="fecha">Fecha*</label>
+  <input id="fecha" type="date" name="fecha" class="form-control" required value="${fn:escapeXml(vm.venta.fecha)}">
+</div>
+<div class="col-md-8">
+  <label class="form-label" for="idCliente">Cliente*</label>
+  <select id="idCliente" name="idCliente" class="form-select" required>
+    <option value="">Seleccione un cliente</option>
+    <c:forEach var="cli" items="${vm.clientes}">
+      <option value="${cli.idCliente}" ${cli.idCliente == vm.venta.idCliente ? 'selected' : ''}>
+        <c:out value="${cli.nombre}"/> - <c:out value="${cli.numeroDocumento}"/>
+      </option>
+    </c:forEach>
+  </select>
+</div>
+
+<div class="col-12 mt-3">
+  <label class="form-label">Productos*</label>
+  <div id="productosContainer">
+    <c:forEach var="linea" items="${vm.venta.detalles}">
+      <div class="row producto-item mb-2 g-2">
+        <div class="col-md-7">
+          <select name="idProducto[]" class="form-select" required onchange="calcularTotal()">
+            <option value="" data-precio="0">Seleccione producto</option>
+            <c:forEach var="prod" items="${vm.productos}">
+              <option value="${prod.id}" data-precio="${prod.precioVenta}" ${prod.id == linea.idProducto ? 'selected' : ''}>
+                <c:out value="${prod.nombre}"/> (stock: ${prod.stock}) - $<fmt:formatNumber value="${prod.precioVenta}" maxFractionDigits="0"/>
+              </option>
+            </c:forEach>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input name="cantidad[]" type="number" min="1" class="form-control" placeholder="Cantidad" required
+                 value="${linea.cantidad}" oninput="calcularTotal()">
+        </div>
+        <div class="col-md-2 d-grid">
+          <button type="button" class="btn btn-outline-danger" onclick="eliminarFila(this)" aria-label="Quitar producto">X</button>
+        </div>
+      </div>
+    </c:forEach>
+  </div>
+  <button type="button" class="btn btn-secondary mt-2" onclick="agregarProducto()">+ Agregar producto</button>
+  <div class="mt-3 fs-5">Total estimado: <strong id="totalEstimado">$0</strong></div>
+  <div class="form-text">El total definitivo lo calcula el sistema con el precio vigente y se valida que haya stock suficiente.</div>
+</div>

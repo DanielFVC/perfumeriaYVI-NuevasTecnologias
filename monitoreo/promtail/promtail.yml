@@ -1,0 +1,46 @@
+# =====================================================================
+# Perfumería YVI - Promtail: envía los logs de la aplicación a Loki
+# (gestión de registros, la misma función que ELK en la presentación).
+# Lee /app/logs/perfumeriaYVI.log a través del volumen compartido logs-app.
+# =====================================================================
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  - job_name: perfumeria
+    static_configs:
+      - targets: ["localhost"]
+        labels:
+          job: perfumeria
+          app: perfumeriaYVI
+          __path__: /logs/*.log
+    pipeline_stages:
+      # Las trazas de error de varias líneas se guardan como un solo registro
+      - multiline:
+          firstline: '^\d{4}-\d{2}-\d{2}T'
+          max_wait_time: 3s
+      # Formato de Spring Boot: fecha  NIVEL PID --- [app] [hilo] logger : mensaje
+      - regex:
+          expression: '^(?P<ts>\S+)\s+(?P<level>[A-Z]+)\s+\d+\s+---\s+\[[^\]]*\]\s+\[[^\]]*\]\s+(?P<logger>\S+)\s+:\s(?P<msg>.*)'
+      - timestamp:
+          source: ts
+          format: RFC3339Nano
+      - labels:
+          level:
+          logger:
+      # Bitácora de seguridad (RNF-S7): LOGIN_OK, LOGIN_FAIL, BLOQUEO, LOGOUT, ACCESO_DENEGADO, CSRF_INVALIDO
+      - match:
+          selector: '{logger="SEGURIDAD"}'
+          stages:
+            - regex:
+                source: msg
+                expression: '^(?P<evento>[A-Z_]+)\s'
+            - labels:
+                evento:

@@ -1,0 +1,33 @@
+# =====================================================================
+# Perfumería YVI - Prometheus (etapas OPERAR y MONITOREAR de DevOps)
+# Cada 5 segundos lee las métricas de la aplicación en /actuator/prometheus
+# y evalúa las reglas de alerta de alertas.yml.
+# =====================================================================
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+  external_labels:
+    sistema: perfumeria-yvi
+
+rule_files:
+  - /etc/prometheus/alertas.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+scrape_configs:
+  # La aplicación dentro de Docker publica sus métricas en el puerto interno 8081.
+  # Si la aplicación corre en NetBeans (fuera de Docker) cambie el destino por
+  #   targets: ["host.docker.internal:8080"]  y  metrics_path: /perfumeriaYVI/actuator/prometheus
+  - job_name: perfumeria-app
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ["app:8081"]
+        labels:
+          entorno: docker
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

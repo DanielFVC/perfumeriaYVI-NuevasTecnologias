@@ -1,0 +1,57 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- Campos del proveedor enlazados a vm.proveedor (RF05). Conservan lo escrito si hay error (RNF-U3). --%>
+<c:set var="pro" value="${vm.proveedor}"/>
+<div class="col-12"><h2 class="h6 text-uppercase text-muted mt-2">Datos básicos</h2><hr class="mt-1"></div>
+<div class="col-md-6">
+  <label class="form-label" for="nombre">Nombre o razón social*</label>
+  <input id="nombre" name="nombre" class="form-control" required minlength="3" maxlength="100" value="${fn:escapeXml(pro.nombre)}">
+</div>
+<div class="col-md-6">
+  <label class="form-label" for="nit">NIT*</label>
+  <input id="nit" name="nit" class="form-control" required minlength="5" maxlength="20" value="${fn:escapeXml(pro.nit)}">
+</div>
+<div class="col-md-6">
+  <label class="form-label" for="telefono">Teléfono*</label>
+  <input id="telefono" name="telefono" class="form-control" required pattern="[0-9]{7,15}" maxlength="15" value="${fn:escapeXml(pro.telefono)}">
+</div>
+<div class="col-md-6">
+  <label class="form-label" for="email">Correo electrónico*</label>
+  <input id="email" name="email" type="email" class="form-control" required maxlength="100" value="${fn:escapeXml(pro.email)}">
+</div>
+<div class="col-12"><h2 class="h6 text-uppercase text-muted mt-3">Ubicación</h2><hr class="mt-1"></div>
+<div class="col-md-6">
+  <label class="form-label" for="ciudad">Ciudad*</label>
+  <input id="ciudad" name="ciudad" class="form-control" required maxlength="100" value="${fn:escapeXml(pro.ciudad)}">
+</div>
+<div class="col-md-6">
+  <label class="form-label" for="barrio">Barrio</label>
+  <input id="barrio" name="barrio" class="form-control" maxlength="100" value="${fn:escapeXml(pro.barrio)}">
+</div>
+<div class="col-md-4">
+  <label class="form-label" for="tipoVia">Tipo de vía*</label>
+  <select id="tipoVia" name="tipoVia" class="form-select" required>
+    <option value="">Seleccione</option>
+    <c:forEach var="t" items="${vm.tiposVia}">
+      <option value="${t}" ${t == pro.tipoVia ? 'selected' : ''}>${t}</option>
+    </c:forEach>
+  </select>
+</div>
+<div class="col-md-4">
+  <label class="form-label" for="numeroVia">Número vía*</label>
+  <input id="numeroVia" name="numeroVia" class="form-control" required maxlength="30" value="${fn:escapeXml(pro.numeroVia)}">
+</div>
+<div class="col-md-4">
+  <label class="form-label" for="complemento">Complemento</label>
+  <input id="complemento" name="complemento" class="form-control" maxlength="100" placeholder="#5-20 / Local 3"
+         value="${fn:escapeXml(pro.complemento)}">
+</div>
+<div class="col-12"><h2 class="h6 text-uppercase text-muted mt-3">Datos comerciales</h2><hr class="mt-1"></div>
+<div class="col-md-6">
+  <label class="form-label" for="tipoProveedor">Tipo de proveedor*</label>
+  <select id="tipoProveedor" name="tipoProveedor" class="form-select" required>
+    <option value="">Seleccione</option>
+    <c:forEach var="t" items="${vm.tiposProveedor}">
+      <option value="${t}" ${t == pro.tipoProveedor ? 'selected' : ''}>${t}</option>
+    </c:forEach>
+  </select>
+</div>

@@ -1,0 +1,58 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- Campos del cliente enlazados a vm.cliente (RF04). Conservan lo escrito si hay error (RNF-U3). --%>
+<c:set var="cli" value="${vm.cliente}"/>
+<div class="col-12"><h2 class="h6 text-uppercase text-muted mt-2">Datos personales</h2><hr class="mt-1"></div>
+<div class="col-md-6">
+  <label class="form-label" for="nombre">Nombre completo*</label>
+  <input id="nombre" name="nombre" class="form-control" required minlength="3" maxlength="100" value="${fn:escapeXml(cli.nombre)}">
+</div>
+<div class="col-md-3">
+  <label class="form-label" for="tipoDocumento">Tipo documento*</label>
+  <select id="tipoDocumento" name="tipoDocumento" class="form-select" required>
+    <option value="">Seleccione</option>
+    <c:forEach var="t" items="${vm.tiposDocumento}">
+      <option value="${t}" ${t == cli.tipoDocumento ? 'selected' : ''}>${t}</option>
+    </c:forEach>
+  </select>
+</div>
+<div class="col-md-3">
+  <label class="form-label" for="numeroDocumento">Número documento*</label>
+  <input id="numeroDocumento" name="numeroDocumento" class="form-control" required pattern="[0-9]{1,10}" maxlength="10"
+         value="${fn:escapeXml(cli.numeroDocumento)}">
+</div>
+<div class="col-md-6">
+  <label class="form-label" for="telefono">Teléfono*</label>
+  <input id="telefono" name="telefono" class="form-control" required pattern="[0-9]{7,15}" maxlength="15"
+         value="${fn:escapeXml(cli.telefono)}">
+</div>
+<div class="col-md-6">
+  <label class="form-label" for="email">Email</label>
+  <input id="email" name="email" type="email" class="form-control" maxlength="100" value="${fn:escapeXml(cli.email)}">
+</div>
+<div class="col-12"><h2 class="h6 text-uppercase text-muted mt-3">Ubicación</h2><hr class="mt-1"></div>
+<div class="col-md-6">
+  <label class="form-label" for="ciudad">Ciudad*</label>
+  <input id="ciudad" name="ciudad" class="form-control" required maxlength="50" value="${fn:escapeXml(cli.ciudad)}">
+</div>
+<div class="col-md-6">
+  <label class="form-label" for="barrio">Barrio</label>
+  <input id="barrio" name="barrio" class="form-control" maxlength="100" value="${fn:escapeXml(cli.barrio)}">
+</div>
+<div class="col-md-4">
+  <label class="form-label" for="tipoVia">Tipo de vía</label>
+  <select id="tipoVia" name="tipoVia" class="form-select">
+    <option value="">Seleccione</option>
+    <c:forEach var="t" items="${vm.tiposVia}">
+      <option value="${t}" ${t == cli.tipoVia ? 'selected' : ''}>${t}</option>
+    </c:forEach>
+  </select>
+</div>
+<div class="col-md-4">
+  <label class="form-label" for="numeroVia">Número vía</label>
+  <input id="numeroVia" name="numeroVia" class="form-control" maxlength="10" value="${fn:escapeXml(cli.numeroVia)}">
+</div>
+<div class="col-md-4">
+  <label class="form-label" for="complemento">Complemento</label>
+  <input id="complemento" name="complemento" class="form-control" maxlength="50" placeholder="#5-20 / Apto 301"
+         value="${fn:escapeXml(cli.complemento)}">
+</div>

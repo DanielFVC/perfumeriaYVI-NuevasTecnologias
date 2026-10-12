@@ -1,0 +1,17 @@
+# =====================================================================
+# Perfumería YVI - Alertmanager (etapa OPERAR: gestión de incidentes)
+# Agrupa las alertas de Prometheus y decide a quién avisar.
+# Para la demostración las alertas se ven en http://localhost:9093 y en Grafana.
+# Para recibir avisos reales agregue al receptor, por ejemplo:
+#   email_configs: [{ to: "soporte@perfumeriayvi.co", ... }]
+#   telegram_configs: [{ bot_token: "...", chat_id: 123456 }]
+# =====================================================================
+route:
+  receiver: equipo-perfumeria
+  group_by: ["alertname"]
+  group_wait: 5s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+  - name: equipo-perfumeria

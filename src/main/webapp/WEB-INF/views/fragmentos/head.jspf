@@ -1,0 +1,102 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- RNF-U1: interfaz adaptable a computador, tableta y celular (Bootstrap 5 + viewport).
+     RNF-P1: HTML5 estándar, compatible con navegadores modernos (Chrome, Edge, Firefox).
+     Identidad visual YVI: tinta ciruela, iris para acciones y ámbar para detalles;
+     Bodoni Moda (la letra de las casas de perfume) para títulos y Manrope para la interfaz. --%>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<style>
+  :root {
+    --yvi-porcelana: #F5F4F7;  /* fondo */
+    --yvi-ciruela:   #2A1F35;  /* tinta y barra */
+    --yvi-iris:      #5E4485;  /* acciones */
+    --yvi-iris-osc:  #4A3469;
+    --yvi-iris-tenue:#EEE9F4;
+    --yvi-ambar:     #B8862F;  /* detalles */
+    --yvi-linea:     #E3DEEA;
+    --yvi-gris:      #6D6578;
+    --yvi-serif: "Bodoni Moda", "Bodoni 72", Didot, Georgia, serif;
+    --yvi-sans:  "Manrope", "Segoe UI", system-ui, sans-serif;
+    --bs-body-font-family: var(--yvi-sans);
+    --bs-body-color: var(--yvi-ciruela);
+    --bs-body-bg: var(--yvi-porcelana);
+    --bs-border-color: var(--yvi-linea);
+    --bs-secondary-color: var(--yvi-gris);
+    --bs-link-color-rgb: 94, 68, 133;
+    --bs-focus-ring-color: rgba(94, 68, 133, .25);
+  }
+  body { background: var(--yvi-porcelana); min-height: 100vh; font-size: .95rem; -webkit-font-smoothing: antialiased; }
+  .text-muted { color: var(--yvi-gris) !important; }
+
+  /* Títulos en Bodoni */
+  h1, h2, h3, .h1, h1.h4, .titulo-yvi { color: var(--yvi-ciruela); }
+  h1, .h1, h1.h4, .titulo-yvi { font-family: var(--yvi-serif); font-weight: 600; letter-spacing: -.01em; color: var(--yvi-ciruela); }
+  h1.h4 { font-size: 1.75rem; }
+  .tarjeta h2.h6, .tarjeta .text-uppercase.h6 { text-transform: none !important; font-family: var(--yvi-serif);
+       font-size: 1.15rem; font-weight: 600; color: var(--yvi-ciruela) !important; letter-spacing: 0; }
+
+  /* Superficie principal */
+  .tarjeta { background: #fff; border: 1px solid var(--yvi-linea); border-radius: 14px;
+             box-shadow: 0 1px 2px rgba(42,31,53,.04), 0 12px 32px -18px rgba(42,31,53,.18); padding: 28px; margin-bottom: 32px; }
+
+  /* Barra superior */
+  .barra-yvi { background: var(--yvi-ciruela); border-bottom: 2px solid var(--yvi-ambar); padding: 14px 24px; margin-bottom: 32px; }
+  .barra-yvi .marca { font-family: var(--yvi-serif); font-size: 1.45rem; font-weight: 600; color: #fff; text-decoration: none; letter-spacing: .01em; }
+  .barra-yvi .marca i { color: var(--yvi-ambar); font-size: 1.05rem; margin-right: .55rem; }
+  .barra-yvi .usuario { color: rgba(255,255,255,.72); font-size: .85rem; }
+  .barra-yvi .rol { border: 1px solid rgba(184,134,47,.6); color: #E6C68C; border-radius: 999px; padding: 1px 9px; font-size: .72rem; margin-left: .4rem; }
+  .barra-yvi .btn-barra { color: rgba(255,255,255,.85); border: 1px solid rgba(255,255,255,.25); background: transparent; font-size: .82rem; padding: 5px 12px; border-radius: 8px; }
+  .barra-yvi .btn-barra:hover, .barra-yvi .btn-barra:focus-visible { color: #fff; border-color: #fff; background: rgba(255,255,255,.06); }
+
+  /* Botones */
+  .btn { font-weight: 600; border-radius: 9px; padding: .5rem 1rem; background-image: none; text-shadow: none; }
+  .btn-sm { border-radius: 7px; padding: .3rem .7rem; font-size: .8rem; }
+  .btn-primary { --bs-btn-bg: var(--yvi-iris); --bs-btn-border-color: var(--yvi-iris);
+      --bs-btn-hover-bg: var(--yvi-iris-osc); --bs-btn-hover-border-color: var(--yvi-iris-osc);
+      --bs-btn-active-bg: var(--yvi-iris-osc); --bs-btn-active-border-color: var(--yvi-iris-osc);
+      --bs-btn-disabled-bg: var(--yvi-iris); --bs-btn-disabled-border-color: var(--yvi-iris); }
+  .btn-outline-primary, .btn-outline-secondary, .btn-outline-dark, .btn-outline-success, .btn-secondary {
+      --bs-btn-color: var(--yvi-iris); --bs-btn-bg: #fff; --bs-btn-border-color: var(--yvi-linea);
+      --bs-btn-hover-color: var(--yvi-iris-osc); --bs-btn-hover-bg: var(--yvi-iris-tenue); --bs-btn-hover-border-color: #CFC4DE;
+      --bs-btn-active-color: var(--yvi-iris-osc); --bs-btn-active-bg: var(--yvi-iris-tenue); --bs-btn-active-border-color: #CFC4DE; }
+  .btn-success { --bs-btn-bg: #3F7A5C; --bs-btn-border-color: #3F7A5C; --bs-btn-hover-bg: #336349; --bs-btn-hover-border-color: #336349; }
+  /* Acciones dentro de tablas: discretas, el color aparece al pasar el mouse */
+  .table .btn-warning { --bs-btn-color: var(--yvi-iris); --bs-btn-bg: #fff; --bs-btn-border-color: var(--yvi-linea);
+      --bs-btn-hover-color: var(--yvi-iris-osc); --bs-btn-hover-bg: var(--yvi-iris-tenue); --bs-btn-hover-border-color: #CFC4DE; }
+  .table .btn-danger, .btn-outline-danger { --bs-btn-color: #A23B4B; --bs-btn-bg: #fff; --bs-btn-border-color: #EBD3D7;
+      --bs-btn-hover-color: #fff; --bs-btn-hover-bg: #A23B4B; --bs-btn-hover-border-color: #A23B4B; }
+  .btn:focus-visible, .form-control:focus, .form-select:focus, .form-check-input:focus {
+      border-color: var(--yvi-iris); box-shadow: 0 0 0 .2rem rgba(94,68,133,.22); }
+
+  /* Formularios */
+  .form-label { font-weight: 600; font-size: .82rem; color: var(--yvi-gris); margin-bottom: .3rem; }
+  .form-control, .form-select { border-color: var(--yvi-linea); border-radius: 9px; padding: .55rem .8rem; }
+  .form-check-input:checked { background-color: var(--yvi-iris); border-color: var(--yvi-iris); }
+  .tarjeta hr { border-color: var(--yvi-linea); opacity: 1; }
+
+  /* Tablas */
+  .table { --bs-table-striped-bg: #FAF9FB; --bs-table-hover-bg: var(--yvi-iris-tenue); --bs-table-border-color: var(--yvi-linea); font-size: .88rem; }
+  .table > thead.table-dark { --bs-table-bg: transparent; --bs-table-color: var(--yvi-gris); --bs-table-border-color: var(--yvi-linea); }
+  .table > thead.table-dark th { font-weight: 600; font-size: .78rem; border-bottom: 2px solid var(--yvi-ambar); white-space: nowrap; }
+  .table-bordered > :not(caption) > * > * { border-left-width: 0; border-right-width: 0; }
+  .table td, .table th { vertical-align: middle; padding: .7rem .75rem; }
+  .table-warning { --bs-table-bg: #FBF3E3; --bs-table-striped-bg: #F8EDD6; }
+
+  /* Etiquetas y avisos */
+  .badge.bg-secondary { background: var(--yvi-iris-tenue) !important; color: var(--yvi-iris); font-family: var(--yvi-sans); font-weight: 600; vertical-align: middle; font-size: .75rem; }
+  .alert { border-radius: 10px; border-width: 0 0 0 4px; }
+  .alert-success { background: #EDF5F0; border-color: #3F7A5C; color: #2C5A43; }
+  .alert-danger  { background: #FBEFF1; border-color: #A23B4B; color: #7E2A37; }
+  .alert-warning { background: #FBF3E3; border-color: var(--yvi-ambar); color: #6E4F17; }
+  .alert-info    { background: var(--yvi-iris-tenue); border-color: var(--yvi-iris); color: var(--yvi-iris-osc); }
+
+  .pie-yvi { color: var(--yvi-gris); font-size: .8rem; text-align: center; margin-top: 28px; }
+  .barra-yvi .marca { white-space: nowrap; }
+  @media (max-width: 576px) { .tarjeta { padding: 18px; } .barra-yvi { padding: 12px 16px; } .barra-yvi .marca { font-size: 1.2rem; } }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>

@@ -1,0 +1,27 @@
+<%@ page pageEncoding="UTF-8" %>
+<script>
+  function agregarProducto() {
+    const contenedor = document.getElementById("productosContainer");
+    const fila = document.querySelector(".producto-item").cloneNode(true);
+    fila.querySelector("select").selectedIndex = 0;
+    fila.querySelector("input").value = 1;
+    contenedor.appendChild(fila);
+    calcularTotal();
+  }
+  function eliminarFila(boton) {
+    if (document.querySelectorAll(".producto-item").length > 1) {
+      boton.closest(".producto-item").remove();
+      calcularTotal();
+    }
+  }
+  function calcularTotal() {
+    let total = 0;
+    document.querySelectorAll(".producto-item").forEach(function (fila) {
+      const opcion = fila.querySelector("select").selectedOptions[0];
+      const cantidad = parseInt(fila.querySelector("input").value || "0", 10);
+      total += parseFloat(opcion ? opcion.dataset.precio || "0" : "0") * (isNaN(cantidad) ? 0 : cantidad);
+    });
+    document.getElementById("totalEstimado").textContent = "$" + total.toLocaleString("es-CO");
+  }
+  calcularTotal();
+</script>

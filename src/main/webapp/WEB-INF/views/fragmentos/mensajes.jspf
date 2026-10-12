@@ -1,0 +1,11 @@
+<%@ page pageEncoding="UTF-8" %>
+<%-- RNF-U2 / RNF-F2: mensajes de éxito y error expuestos por el ViewModel (vm.mensaje, vm.error) --%>
+<c:if test="${not empty vm.mensaje}">
+  <div class="alert alert-success alert-dismissible fade show" role="status">
+    <c:out value="${vm.mensaje}"/>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+  </div>
+</c:if>
+<c:if test="${not empty vm.error}">
+  <div class="alert alert-danger" role="alert"><c:out value="${vm.error}"/></div>
+</c:if>

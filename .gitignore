@@ -1,0 +1,10 @@
+target/
+logs/
+*.log
+.env
+nbproject/private/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
