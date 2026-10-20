@@ -78,3 +78,12 @@ Detalle en [MONITOREO.md](MONITOREO.md).
 | RNF-S2 | "Cuentas bloqueadas" · alerta `CuentaBloqueada` | `perfumeria_cuentas_bloqueadas_total` |
 | RNF-S4 | "Formularios sin CSRF" · alerta `PeticionesSinTokenCsrf` | `perfumeria_csrf_rechazados_total` |
 | RNF-S7 | "Inicios de sesión", "Accesos denegados", "Bitácora de seguridad en vivo" | `perfumeria_login_total`, Loki `{logger="SEGURIDAD"}` |
+
+## Microservicios
+
+Programas independientes que apoyan requisitos funcionales existentes. Se despliegan como software (`java -jar`), sin Docker. Detalle en [microservicios/README.md](../microservicios/README.md).
+
+| Microservicio | Apoya | HU | Endpoint | Validador | Microservicio (lógica) |
+|---|---|---|---|---|---|
+| MS-01 Inventario (8091) | RF06, CU06 | HU05 | `ReabastecimientoEndpoint` | `ReabastecimientoValidador` | `ReabastecimientoMicroservicio` |
+| MS-02 Facturación (8092) | RF07 (total automático), RF04 (documento del cliente) | HU06 | `FacturaEndpoint` | `FacturaValidador` | `FacturaMicroservicio` |

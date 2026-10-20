@@ -1,0 +1,9 @@
+{
+  "idProducto": 1,
+  "nombreProducto": "Aqua Brisa 100 ml",
+  "stockActual": 4,
+  "stockMinimo": 5,
+  "ventasDiarias": 2,
+  "diasEntregaProveedor": 3,
+  "diasPlanificacion": 30
+}

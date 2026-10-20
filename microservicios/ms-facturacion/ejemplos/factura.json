@@ -1,0 +1,10 @@
+{
+  "tipoDocumento": "CC",
+  "numeroDocumento": "1059202768",
+  "nombreCliente": "Andrés Suárez Cárdenas",
+  "porcentajeDescuento": 10,
+  "items": [
+    { "idProducto": 1, "descripcion": "Aqua Brisa 100 ml",     "cantidad": 2, "precioUnitario": 45000 },
+    { "idProducto": 5, "descripcion": "Cuero Imperial 100 ml", "cantidad": 1, "precioUnitario": 52000 }
+  ]
+}

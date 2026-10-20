@@ -2,17 +2,19 @@
 # Perfumería YVI - Pipeline CI/CD (GitHub Actions)
 #
 #   PLAN/CODE  -> ramas feature/* y Pull Requests hacia develop o main
-#   BUILD      -> compila con Maven (Java 21)
-#   TEST       -> pruebas unitarias + reporte de cobertura JaCoCo
-#   RELEASE    -> publica el WAR y la imagen Docker (solo en main)
+#   BUILD      -> compila con Maven (Java 21): aplicación web (WAR) y 2 microservicios (JAR)
+#   TEST       -> pruebas unitarias + reporte de cobertura JaCoCo (el pipeline falla si una prueba falla)
+#   RELEASE    -> rama main: imagen Docker "latest" en GitHub Container Registry
+#                 etiqueta v* (ej. v2.1.0): imagen con la versión + GitHub Release con el WAR y los JAR
 #   DEPLOY     -> despliegue al entorno "produccion" (aprobación manual)
-#   OPERATE/MONITOR -> /actuator/health en el contenedor (HEALTHCHECK) y Prometheus + Grafana (docs/MONITOREO.md)
+#   OPERATE/MONITOR -> HEALTHCHECK, /actuator/health y Prometheus + Grafana (docs/MONITOREO.md)
 # =====================================================================
 name: CI-CD Perfumeria YVI
 
 on:
   push:
     branches: [ main, develop ]
+    tags: [ 'v*' ]
   pull_request:
     branches: [ main, develop ]
   workflow_dispatch:
@@ -22,6 +24,7 @@ permissions:
   packages: write
 
 jobs:
+  # ------------------------------------------------------------------ BUILD + TEST
   build-test:
     name: Build y pruebas
     runs-on: ubuntu-latest
@@ -36,8 +39,19 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Compilar, probar y empaquetar
+      - name: Aplicación web - compilar, probar y empaquetar (WAR)
         run: mvn -B verify
+
+      - name: Microservicios - compilar, probar y empaquetar (JAR)
+        run: mvn -B -f microservicios/pom.xml verify
+
+      - name: Reunir los ejecutables
+        run: |
+          mkdir -p dist
+          cp target/perfumeriaYVI.war dist/
+          cp microservicios/ms-inventario/target/ms-inventario.jar dist/
+          cp microservicios/ms-facturacion/target/ms-facturacion.jar dist/
+          ls -la dist
 
       - name: Publicar resultados de pruebas
         if: always()
@@ -47,17 +61,28 @@ jobs:
           path: |
             target/surefire-reports/
             target/site/jacoco/
+            microservicios/*/target/surefire-reports/
+            microservicios/*/target/site/jacoco/
 
       - name: Publicar WAR
         uses: actions/upload-artifact@v4
         with:
           name: perfumeriaYVI-war
-          path: target/perfumeriaYVI.war
+          path: dist/perfumeriaYVI.war
 
+      - name: Publicar microservicios
+        uses: actions/upload-artifact@v4
+        with:
+          name: microservicios-jar
+          path: |
+            dist/ms-inventario.jar
+            dist/ms-facturacion.jar
+
+  # ------------------------------------------------------------------ RELEASE (imagen Docker)
   docker:
     name: Imagen Docker (release)
     needs: build-test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,19 +94,69 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # GitHub Container Registry exige el nombre del dueño en minúsculas
-      - name: Nombre de la imagen en minúsculas
-        run: echo "IMAGEN=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/perfumeria-yvi" >> "$GITHUB_ENV"
+      # GitHub Container Registry exige el nombre del dueño en minúsculas.
+      # Siempre: etiqueta con el commit. Rama main o versión v*: también "latest". Versión v*: también la versión.
+      - name: Etiquetas de la imagen
+        run: |
+          IMAGEN="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/perfumeria-yvi"
+          ETIQUETAS="$IMAGEN:$GITHUB_SHA,$IMAGEN:latest"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            ETIQUETAS="$ETIQUETAS,$IMAGEN:$GITHUB_REF_NAME"
+          fi
+          echo "ETIQUETAS=$ETIQUETAS" >> "$GITHUB_ENV"
+          echo "Etiquetas: $ETIQUETAS"
 
       - name: Construir y publicar imagen
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: |
-            ${{ env.IMAGEN }}:latest
-            ${{ env.IMAGEN }}:${{ github.sha }}
+          tags: ${{ env.ETIQUETAS }}
+          # Une la imagen con el repositorio (aparece en su sección Packages)
+          labels: org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
 
+  # ------------------------------------------------------------------ RELEASE (versión publicada)
+  release:
+    name: Publicar versión (GitHub Releases)
+    needs: build-test
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Descargar el WAR
+        uses: actions/download-artifact@v4
+        with:
+          name: perfumeriaYVI-war
+          path: dist
+
+      - name: Descargar los microservicios
+        uses: actions/download-artifact@v4
+        with:
+          name: microservicios-jar
+          path: dist
+
+      - name: Crear la versión con sus archivos
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Perfumería YVI ${{ github.ref_name }}
+          generate_release_notes: true
+          body: |
+            Versión **${{ github.ref_name }}** construida y probada automáticamente por GitHub Actions.
+
+            | Archivo | Qué es | Cómo se ejecuta |
+            |---|---|---|
+            | `perfumeriaYVI.war` | Aplicación web (inventario y ventas) | `docker compose up -d` o `java -jar perfumeriaYVI.war` |
+            | `ms-inventario.jar` | Microservicio de reabastecimiento (puerto 8091) | `java -jar ms-inventario.jar` |
+            | `ms-facturacion.jar` | Microservicio de facturación (puerto 8092) | `java -jar ms-facturacion.jar` |
+
+            Imagen Docker: `ghcr.io/<usuario>/perfumeria-yvi:${{ github.ref_name }}`
+          files: |
+            dist/perfumeriaYVI.war
+            dist/ms-inventario.jar
+            dist/ms-facturacion.jar
+
+  # ------------------------------------------------------------------ DEPLOY
   deploy:
     name: Despliegue a producción
     needs: docker

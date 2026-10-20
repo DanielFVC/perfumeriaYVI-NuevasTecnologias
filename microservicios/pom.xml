@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Perfumería YVI - Proyecto agrupador de los microservicios.
+  Permite compilar, probar y empaquetar los dos microservicios con un solo comando:
+
+      mvn -f microservicios/pom.xml clean verify
+
+  Cada microservicio sigue siendo un proyecto independiente (se puede abrir solo en NetBeans).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.perfumeriayvi</groupId>
+    <artifactId>microservicios</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>Perfumeria YVI - Microservicios</name>
+
+    <modules>
+        <module>ms-inventario</module>
+        <module>ms-facturacion</module>
+    </modules>
+</project>

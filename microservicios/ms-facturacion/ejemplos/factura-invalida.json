@@ -1,0 +1,10 @@
+{
+  "tipoDocumento": "NIT",
+  "numeroDocumento": "890903938-5",
+  "nombreCliente": "Distribuidora Ejemplo SAS",
+  "porcentajeDescuento": 70,
+  "items": [
+    { "idProducto": 1, "descripcion": "Aqua Brisa 100 ml", "cantidad": 2, "precioUnitario": 45000 },
+    { "idProducto": 1, "descripcion": "Aqua Brisa 100 ml", "cantidad": 0, "precioUnitario": -100 }
+  ]
+}

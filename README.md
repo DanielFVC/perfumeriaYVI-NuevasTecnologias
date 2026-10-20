@@ -9,6 +9,9 @@ productos, ventas, vendedores y auditoría de la Perfumería YVI.
 - **DevOps:** pruebas automáticas, Docker, Docker Compose y pipeline CI/CD. Ver [docs/DEVOPS.md](docs/DEVOPS.md).
 - **Monitoreo:** Prometheus, Grafana, Alertmanager y Loki con un tablero que mide los requisitos no funcionales
   en vivo. Guía de la demostración en [docs/MONITOREO.md](docs/MONITOREO.md).
+- **Microservicios:** MS-01 Inventario (reabastecimiento, puerto 8091) y MS-02 Facturación (IVA y total, puerto 8092),
+  programas independientes que se despliegan como software con `java -jar` (sin Docker).
+  Ver [microservicios/README.md](microservicios/README.md).
 - **Trazabilidad:** cada clase indica el requisito que implementa (RF, RNF, CU, HU).
   Índice en [docs/TRAZABILIDAD.md](docs/TRAZABILIDAD.md).
 
@@ -32,6 +35,8 @@ src/test/java/                     Pruebas unitarias (Model, seguridad y ViewMod
 database/perfumeriayvi_v2.sql      Base de datos ficticia, robusta y segura
 docker/, Dockerfile, docker-compose.yml, devops/ci-cd.yml      DevOps (el pipeline va en .github/workflows/)
 monitoreo/                         Prometheus, alertas, Grafana, Loki/Promtail y scripts k6 de la demo
+microservicios/                    MS-01 ms-inventario y MS-02 ms-facturacion + scripts construir/desplegar/estado/vigilante
+devops/entorno.bat                 Prepara Java 21 y Maven (el de NetBeans) en una ventana de CMD
 ```
 
 ## Ejecutar en NetBeans + XAMPP
@@ -76,6 +81,17 @@ docker compose run --rm trafico run /scripts/ataque.js   # simula ataques (bloqu
 ## Pruebas
 
 ```bash
-mvn verify                  # pruebas + reporte de cobertura en target/site/jacoco/index.html
+mvn verify                                  # aplicación web: pruebas + cobertura en target/site/jacoco/index.html
+mvn -f microservicios/pom.xml verify        # microservicios: 35 pruebas + cobertura de cada uno
 ```
-"# perfumeria-yvi" 
+
+## Microservicios (sin Docker)
+
+```bat
+microservicios\construir.bat     &:: BUILD + TEST -> ms-inventario.jar y ms-facturacion.jar
+microservicios\desplegar.bat     &:: DEPLOY -> los arranca en %USERPROFILE%\PerfumeriaYVI-servidor
+microservicios\estado.bat        &:: OPERATE -> salud de los servicios
+```
+
+La guía paso a paso de la demostración de BUILD, TEST, RELEASE, DEPLOY y OPERATE está en
+[docs/DEMO_DEVOPS.md](docs/DEMO_DEVOPS.md).
